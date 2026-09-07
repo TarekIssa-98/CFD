@@ -1385,7 +1385,71 @@ def plot_grid_and_temperature(fields):
     )
 
     plt.show()
+# 9. HOTTEST / COLDEST POINTS
 
+def plot_hot_cold_points(fields):
+
+    theta_fine = np.linspace(0, 2*np.pi, 2000)
+    T_ana_fine = analytical_surface(theta_fine)
+
+    i_hot_ana = np.argmax(T_ana_fine)
+    i_cold_ana = np.argmin(T_ana_fine)
+
+    theta_hot_ana = theta_fine[i_hot_ana]
+    theta_cold_ana = theta_fine[i_cold_ana]
+
+    theta_num = np.arange(Ntheta) * (2*np.pi/Ntheta)
+    T_surface_num = fields["Direct"][Nr, :]
+
+    i_hot_num = np.argmax(T_surface_num)
+    i_cold_num = np.argmin(T_surface_num)
+
+    theta_hot_num = theta_num[i_hot_num]
+    theta_cold_num = theta_num[i_cold_num]
+
+    plt.figure(figsize=(9, 6))
+
+    plt.plot(np.rad2deg(theta_fine), T_ana_fine, label="Analytical", linewidth=2)
+    plt.plot(np.rad2deg(theta_num), T_surface_num, "o--", markersize=4,
+             linewidth=1, label="Direct (numerical)")
+
+    plt.plot(np.rad2deg(theta_hot_ana), T_ana_fine[i_hot_ana], "r^",
+             markersize=12, label="Hottest (analytical)")
+    plt.plot(np.rad2deg(theta_cold_ana), T_ana_fine[i_cold_ana], "bv",
+             markersize=12, label="Coldest (analytical)")
+    plt.plot(np.rad2deg(theta_hot_num), T_surface_num[i_hot_num], "r^",
+             markersize=9, markeredgecolor="k", label="Hottest (numerical)")
+    plt.plot(np.rad2deg(theta_cold_num), T_surface_num[i_cold_num], "bv",
+             markersize=9, markeredgecolor="k", label="Coldest (numerical)")
+
+    plt.annotate(f"{np.rad2deg(theta_hot_ana):.1f}°, {T_ana_fine[i_hot_ana]:.2f}°C",
+                 (np.rad2deg(theta_hot_ana), T_ana_fine[i_hot_ana]),
+                 textcoords="offset points", xytext=(8, 8))
+    plt.annotate(f"{np.rad2deg(theta_cold_ana):.1f}°, {T_ana_fine[i_cold_ana]:.2f}°C",
+                 (np.rad2deg(theta_cold_ana), T_ana_fine[i_cold_ana]),
+                 textcoords="offset points", xytext=(8, -14))
+
+    plt.xlabel(r"$\theta$ (degrees)")
+    plt.ylabel("Surface temperature (°C)")
+    plt.title("Hottest / Coldest Surface Points: Analytical vs Numerical")
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("hot_cold_points.png", dpi=300, bbox_inches="tight")
+    plt.show()
+
+    print("HOTTEST / COLDEST POINTS")
+    print(f"  Analytical hottest: theta = {np.rad2deg(theta_hot_ana):7.2f} deg,  T = {T_ana_fine[i_hot_ana]:.4f} C")
+    print(f"  Analytical coldest: theta = {np.rad2deg(theta_cold_ana):7.2f} deg,  T = {T_ana_fine[i_cold_ana]:.4f} C")
+    print(f"  Numerical  hottest: theta = {np.rad2deg(theta_hot_num):7.2f} deg,  T = {T_surface_num[i_hot_num]:.4f} C")
+    print(f"  Numerical  coldest: theta = {np.rad2deg(theta_cold_num):7.2f} deg,  T = {T_surface_num[i_cold_num]:.4f} C")
+
+    return {
+        "theta_hot_ana": theta_hot_ana, "T_hot_ana": T_ana_fine[i_hot_ana],
+        "theta_cold_ana": theta_cold_ana, "T_cold_ana": T_ana_fine[i_cold_ana],
+        "theta_hot_num": theta_hot_num, "T_hot_num": T_surface_num[i_hot_num],
+        "theta_cold_num": theta_cold_num, "T_cold_num": T_surface_num[i_cold_num],
+    }
 
 # MAIN REPORT
 
@@ -1399,6 +1463,8 @@ if __name__ == "__main__":
     plot_mesh(Nr, Ntheta, R)
 
     plot_grid_and_temperature(fields)
+
+    plot_hot_cold_points(fields)
 
     plot_surface_comparison(fields)
 
